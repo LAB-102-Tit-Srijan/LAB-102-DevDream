@@ -2,5 +2,6 @@ venv/
 __pycache__/
 *.pyc
 .env
+.runtime/
 uploads/videos/*.mp4
 uploads/videos/*.mov

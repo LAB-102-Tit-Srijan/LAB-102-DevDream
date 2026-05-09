@@ -61,3 +61,28 @@ def supabase_select(table: str, filters: dict = None) -> list:
         raise Exception(f"DB select failed [{response.status_code}]: {response.text}")
 
     return response.json()
+
+
+def supabase_update(table: str, filters: dict, payload: dict) -> list:
+    """
+    Kisi table mein rows update karta hai filter ke basis par.
+    filters example: {"id": "eq.5"}
+    payload example: {"processing_status": "transcribed"}
+    Returns list of updated rows.
+    """
+    url = f"{SUPABASE_URL}/rest/v1/{table}"
+    if filters:
+        params = "&".join(f"{k}={v}" for k, v in filters.items())
+        url += f"?{params}"
+
+    headers = get_headers()
+    headers["Prefer"] = "return=representation"
+
+    response = http_requests.patch(url, headers=headers, json=payload)
+
+    if response.status_code not in (200, 204):
+        raise Exception(f"DB update failed [{response.status_code}]: {response.text}")
+
+    if response.status_code == 204:
+        return []
+    return response.json()
