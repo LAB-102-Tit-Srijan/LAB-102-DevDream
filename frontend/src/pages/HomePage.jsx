@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import ChatInput from '../components/ChatInput';
 import AIChatInterface from '../components/AIChatInterface';
+import TranscriptViewer from '../components/TranscriptViewer';
 import { useAuth } from '../context/AuthContext';
 
 const HomePage = () => {
   const { user } = useAuth();
   const [videoFile, setVideoFile] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
+  const [activeTab, setActiveTab] = useState('chat'); // 'chat' or 'transcript'
 
   const handleFileUpload = (file) => {
     const url = URL.createObjectURL(file);
@@ -58,9 +60,40 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* AI Chat Area */}
-          <div className="lg:col-span-5 xl:col-span-4 h-full">
-            <AIChatInterface videoData={videoFile} />
+          {/* AI and Data Sidebar Area */}
+          <div className="lg:col-span-5 xl:col-span-4 flex flex-col h-full min-h-[600px]">
+            {/* Tab Switcher */}
+            <div className="flex bg-[#212121] p-1 rounded-2xl mb-4 border border-white/5 self-start">
+              <button 
+                onClick={() => setActiveTab('chat')}
+                className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'chat' 
+                    ? 'bg-primary-600 text-white shadow-lg' 
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                AI CHAT
+              </button>
+              <button 
+                onClick={() => setActiveTab('transcript')}
+                className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'transcript' 
+                    ? 'bg-primary-600 text-white shadow-lg' 
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                TRANSCRIPT
+              </button>
+            </div>
+
+            {/* Content Area */}
+            <div className="flex-1 min-h-0">
+              {activeTab === 'chat' ? (
+                <AIChatInterface videoData={videoFile} />
+              ) : (
+                <TranscriptViewer onTimestampClick={(time) => console.log('Seeking to:', time)} />
+              )}
+            </div>
           </div>
         </div>
       )}
