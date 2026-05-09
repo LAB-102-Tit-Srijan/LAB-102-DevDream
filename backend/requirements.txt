@@ -8,3 +8,8 @@ python-multipart
 openai-whisper
 ffmpeg-python
 imageio-ffmpeg
+sentence-transformers
+faiss-cpu
+numpy
+google-generativeai
+groq

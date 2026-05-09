@@ -113,7 +113,13 @@ def handle_video_upload(
     # Step 4: DB insert
     # File path string format: "uploads/videos/video_xyz.mp4"
     relative_path = str(saved_path).replace("\\", "/")
-    record = _insert_video_metadata(title, subject_name, relative_path, uploaded_by)
+    try:
+        record = _insert_video_metadata(title, subject_name, relative_path, uploaded_by)
+    except Exception as e:
+        # Cleanup orphan file if DB insert fails
+        if saved_path.exists():
+            saved_path.unlink()
+        raise e
 
     # Step 5: Return clean response data
     return {

@@ -1,8 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, BackgroundTasks, Depends
 from typing import Optional
 
 from app.schemas.video import VideoUploadResponse
 from app.services.video_service import handle_video_upload
+from app.services.tasks import process_video_transcript_background
+from app.services.auth_service import verify_token
 
 # ── Router Setup ───────────────────────────────────────────────────────────
 router = APIRouter(
@@ -15,47 +17,42 @@ router = APIRouter(
     "/upload-video",
     response_model=VideoUploadResponse,
     summary="Upload a local video file",
-    description="""
-    Ek local video file (.mp4 ya .mov) upload karo.
-    
-    - File ko safely `uploads/videos/` mein save kiya jaata hai.
-    - Unique UUID-based filename use hota hai (overwrite safe).
-    - Metadata PostgreSQL (Supabase) ke `videos` table mein save hota hai.
-    - `video_id` return hota hai jo future transcript aur RAG steps mein use hoga.
-    """,
 )
 async def upload_video(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(..., description="Video file (.mp4 or .mov)"),
     title: str = Form(..., description="Video ka title (required)"),
     subject_name: Optional[str] = Form(None, description="Subject ka naam (optional)"),
-    uploaded_by: Optional[str] = Form(None, description="User ka email ya ID (optional)"),
+    user: dict = Depends(verify_token)
 ):
-    """
-    POST /api/upload-video
-
-    Input:
-    - file       : .mp4 ya .mov video file
-    - title      : Video ka naam
-    - subject_name : (optional) Subject
-    - uploaded_by  : (optional) User identifier
-
-    Output:
-    - video_id, title, file_path
-    """
-    # Agar file hai hi nahi (empty request)
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No file provided.")
+
+    # 200MB size limit check
+    MAX_SIZE = 200 * 1024 * 1024
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+    if file_size > MAX_SIZE:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 200MB.")
 
     # Core service call
     result_data = handle_video_upload(
         file=file,
         title=title,
         subject_name=subject_name,
-        uploaded_by=uploaded_by,
+        uploaded_by=user["id"],
+    )
+    
+    # Trigger background transcription
+    background_tasks.add_task(
+        process_video_transcript_background, 
+        video_id=result_data["video_id"], 
+        file_path=result_data["file_path"]
     )
 
     return VideoUploadResponse(
         status=True,
-        message="Video uploaded successfully",
+        message="Video uploaded successfully. Transcription started in background.",
         data=result_data,
     )

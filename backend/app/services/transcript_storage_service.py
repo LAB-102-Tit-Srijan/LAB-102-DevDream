@@ -64,6 +64,7 @@ def save_transcript(
     video_id: int,
     transcript_text: str,
     transcript_json: list[dict[str, Any]],
+    manage_video_status: bool = True,
 ) -> TranscriptSaveResult:
     """
     Validate and persist a generated transcript to PostgreSQL.
@@ -105,7 +106,8 @@ def save_transcript(
     _check_duplicate_transcript(validated_input.video_id)
 
     # ── Step 4: Update processing_status → "transcribing" ──────────────
-    _update_video_status(validated_input.video_id, "transcribing")
+    if manage_video_status:
+        _update_video_status(validated_input.video_id, "transcribing")
 
     # ── Step 5: Insert transcript into database ─────────────────────────
     try:
@@ -133,11 +135,13 @@ def save_transcript(
 
     except TranscriptInsertError:
         # Our own error, rollback status and re-raise
-        _update_video_status(validated_input.video_id, "failed")
+        if manage_video_status:
+            _update_video_status(validated_input.video_id, "failed")
         raise
     except Exception as exc:
         # Unexpected DB failure, rollback status
-        _update_video_status(validated_input.video_id, "failed")
+        if manage_video_status:
+            _update_video_status(validated_input.video_id, "failed")
         logger.error(
             "Transcript insert FAILED | video_id=%s | error=%s",
             validated_input.video_id,
@@ -146,7 +150,8 @@ def save_transcript(
         raise TranscriptInsertError(f"Database insert failed: {exc}") from exc
 
     # ── Step 6: Update processing_status → "transcribed" ────────────────
-    _update_video_status(validated_input.video_id, "transcribed")
+    if manage_video_status:
+        _update_video_status(validated_input.video_id, "transcribed")
 
     result = TranscriptSaveResult(
         transcript_id=transcript_id,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ChatInput from '../components/ChatInput';
 import AIChatInterface from '../components/AIChatInterface';
 import TranscriptViewer from '../components/TranscriptViewer';
@@ -10,9 +10,11 @@ const HomePage = () => {
   const { user } = useAuth();
   const [videoFile, setVideoFile] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
+  const [videoId, setVideoId] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('chat'); // 'chat' or 'transcript'
+  const videoRef = useRef(null);
 
   const handleFileUpload = async (file) => {
     setIsUploading(true);
@@ -21,31 +23,37 @@ const HomePage = () => {
       // 1. Upload to backend
       const response = await videoService.uploadVideo(
         file, 
-        file.name, // Using filename as title for now
-        'General', // Default subject
-        user?.email || 'anonymous'
+        file.name, 
+        'General'
+        // uploaded_by is now set server-side via JWT token — do not pass here
       );
 
       console.log('Upload success:', response);
+      
+      // Extract video_id from response.data (backend format)
+      const newVideoId = response.data.video_id;
+      setVideoId(newVideoId);
 
       // 2. Set local preview after successful upload
       const url = URL.createObjectURL(file);
       setVideoFile({
         ...file,
-        id: response.data.video_id,
+        id: newVideoId,
         serverPath: response.data.file_path,
         name: file.name
       });
       setVideoUrl(url);
+      
+      // Auto switch to transcript to show progress
+      setActiveTab('transcript');
     } catch (err) {
       console.error('Upload failed:', err);
-      setError(err || 'Failed to upload video');
+      setError(typeof err === 'string' ? err : 'Failed to upload video. Please try again.');
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Cleanup URL object when component unmounts or file changes
   useEffect(() => {
     return () => {
       if (videoUrl) URL.revokeObjectURL(videoUrl);
@@ -82,12 +90,13 @@ const HomePage = () => {
           <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-4">
             <div className="aspect-video bg-black rounded-[24px] overflow-hidden border border-white/5 shadow-2xl relative group">
               <video 
+                ref={videoRef}
                 src={videoUrl} 
                 controls 
                 className="w-full h-full object-contain"
               />
               <button 
-                onClick={() => { setVideoFile(null); setVideoUrl(null); }}
+                onClick={() => { setVideoFile(null); setVideoUrl(null); setVideoId(null); }}
                 className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white px-3 py-1 rounded-full text-xs transition-all opacity-0 group-hover:opacity-100"
               >
                 Change Video
@@ -95,7 +104,9 @@ const HomePage = () => {
             </div>
             <div className="px-2">
               <h2 className="text-xl font-bold text-white tracking-tight">{videoFile.name}</h2>
-              <p className="text-slate-400 text-sm mt-1">Ready for AI analysis</p>
+              <p className="text-slate-400 text-sm mt-1">
+                {videoId ? 'Analysis in progress' : 'Ready for AI analysis'}
+              </p>
             </div>
           </div>
 
@@ -130,7 +141,15 @@ const HomePage = () => {
               {activeTab === 'chat' ? (
                 <AIChatInterface videoData={videoFile} />
               ) : (
-                <TranscriptViewer onTimestampClick={(time) => console.log('Seeking to:', time)} />
+                <TranscriptViewer 
+                  videoId={videoId} 
+                  onTimestampClick={(time) => {
+                    if (videoRef.current) {
+                      videoRef.current.currentTime = time;
+                      videoRef.current.play();
+                    }
+                  }} 
+                />
               )}
             </div>
           </div>

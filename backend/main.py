@@ -1,4 +1,5 @@
 import os
+import logging
 import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException, Depends
@@ -8,10 +9,20 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from pathlib import Path
 
+# ── Logging Configuration ───────────────────────────────────────────────────
+# Set to INFO so background task logs are visible in console
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+    datefmt="%H:%M:%S",
+)
+
 from models import UserSignup, UserLogin, UserProfile
 
 # ── New Routers ─────────────────────────────────────────────────────────────
 from app.api.video import router as video_router
+from app.api.transcript import router as transcript_router
+from app.api.chat import router as chat_router
 
 # Load environment variables from the current directory's .env file
 env_path = Path('.') / '.env'
@@ -40,6 +51,8 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ── Include Routers ─────────────────────────────────────────────────────────
 app.include_router(video_router)
+app.include_router(transcript_router)
+app.include_router(chat_router)
 
 # ── Auth Setup ──────────────────────────────────────────────────────────────
 security = HTTPBearer()

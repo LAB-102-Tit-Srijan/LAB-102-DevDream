@@ -21,23 +21,49 @@ const AIChatInterface = ({ videoData }) => {
   }, [messages, isTyping]);
 
   const handleSend = async (content) => {
-    if (!content.trim()) return;
+    if (!content.trim() || isTyping) return;
 
     const userMsg = { id: Date.now(), type: 'user', content };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      if (!videoData?.id) throw new Error("Video ID not found. Please ensure video is uploaded.");
+
+      // Build conversation history from last 6 messages (3 turns)
+      // Filter out the initial greeting (which has 'suggestions') and map to Groq format
+      const history = messages
+        .filter(m => !m.suggestions)  // exclude the initial AI greeting message
+        .slice(-6)
+        .map(m => ({
+          role: m.type === 'user' ? 'user' : 'assistant',
+          content: m.content
+        }));
+
+      const { default: api } = await import('../services/api');
+      const response = await api.post(`/api/videos/${videoData.id}/ask`, {
+        question: content,
+        history,
+      });
+
       const aiMsg = { 
         id: Date.now() + 1, 
         type: 'ai', 
-        content: `Based on the video at this timestamp, here's a detailed explanation... (This is a placeholder for real AI integration)`
+        content: response.data.data.answer
       };
       setMessages(prev => [...prev, aiMsg]);
+    } catch (err) {
+      console.error("Chat error:", err);
+      const errMsg = { 
+        id: Date.now() + 1, 
+        type: 'ai', 
+        content: err.response?.data?.detail || "Sorry, I couldn't process your request right now."
+      };
+      setMessages(prev => [...prev, errMsg]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -103,12 +129,13 @@ const AIChatInterface = ({ videoData }) => {
             type="text" 
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask anything about the video..."
-            className="w-full bg-slate-900 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+            disabled={isTyping}
+            placeholder={isTyping ? "Waiting for response..." : "Ask anything about the video..."}
+            className="w-full bg-slate-900 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <button 
             type="submit"
-            disabled={!input.trim()}
+            disabled={!input.trim() || isTyping}
             className="absolute right-2 p-1.5 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:bg-slate-800 text-white rounded-lg transition-all"
           >
             <Send className="w-4 h-4" />
