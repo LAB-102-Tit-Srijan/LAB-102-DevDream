@@ -2,7 +2,9 @@ import os
 import requests as http_requests
 from dotenv import load_dotenv
 
-load_dotenv()
+from pathlib import Path
+env_path = Path(__file__).resolve().parent.parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")

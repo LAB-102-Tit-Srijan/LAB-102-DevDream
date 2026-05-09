@@ -2,16 +2,45 @@ import { useState, useEffect } from 'react';
 import ChatInput from '../components/ChatInput';
 import AIChatInterface from '../components/AIChatInterface';
 import { useAuth } from '../context/AuthContext';
+import videoService from '../services/videoService';
+import Loader from '../components/Loader';
 
 const HomePage = () => {
   const { user } = useAuth();
   const [videoFile, setVideoFile] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleFileUpload = (file) => {
-    const url = URL.createObjectURL(file);
-    setVideoFile(file);
-    setVideoUrl(url);
+  const handleFileUpload = async (file) => {
+    setIsUploading(true);
+    setError(null);
+    try {
+      // 1. Upload to backend
+      const response = await videoService.uploadVideo(
+        file, 
+        file.name, // Using filename as title for now
+        'General', // Default subject
+        user?.email || 'anonymous'
+      );
+
+      console.log('Upload success:', response);
+
+      // 2. Set local preview after successful upload
+      const url = URL.createObjectURL(file);
+      setVideoFile({
+        ...file,
+        id: response.data.video_id,
+        serverPath: response.data.file_path,
+        name: file.name
+      });
+      setVideoUrl(url);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setError(err || 'Failed to upload video');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Cleanup URL object when component unmounts or file changes
@@ -25,15 +54,25 @@ const HomePage = () => {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 pb-12">
-      {!videoFile ? (
+      {isUploading ? (
+        <div className="flex flex-col items-center gap-4">
+          <Loader />
+          <p className="text-[#D1D1D1] animate-pulse">Uploading your video to StudyAI...</p>
+        </div>
+      ) : !videoFile ? (
         <div className="w-full max-w-4xl flex flex-col items-center animate-in fade-in duration-1000">
           <div className="mb-8 text-center">
             <h1 className="text-4xl md:text-5xl font-serif text-[#D1D1D1]">
               Good evening, {userName}
             </h1>
+            {error && (
+              <p className="text-red-400 mt-4 text-sm bg-red-400/10 py-2 px-4 rounded-full border border-red-400/20">
+                {error}
+              </p>
+            )}
           </div>
           
-          <ChatInput onFileUpload={handleFileUpload} />
+          <ChatInput onFileUpload={handleFileUpload} isLoading={isUploading} />
         </div>
       ) : (
         <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

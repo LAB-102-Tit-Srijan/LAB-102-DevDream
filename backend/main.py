@@ -1,5 +1,6 @@
 import os
 import requests
+import uvicorn
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,8 +13,9 @@ from models import UserSignup, UserLogin, UserProfile
 # ── New Routers ─────────────────────────────────────────────────────────────
 from app.api.video import router as video_router
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from the current directory's .env file
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
 
 # ── App Init ────────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -185,3 +187,14 @@ async def root():
         "docs": "/docs",
         "version": "1.0.0"
     }
+
+
+# ── Entry Point ─────────────────────────────────────────────────────────────
+# Ab aap `python main.py` se directly server run kar sakte ho!
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,  # Code change hone par auto-restart
+    )
