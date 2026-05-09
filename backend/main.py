@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from models import UserSignup, UserLogin
+from models import UserSignup, UserLogin, UserProfile
 
 # Load environment variables
 load_dotenv()
@@ -87,6 +87,49 @@ async def protected_route(user = Depends(verify_token)):
         "message": "You are authorized!",
         "user": user
     }
+
+@app.get("/profile")
+async def get_profile(credentials: HTTPAuthorizationCredentials = Depends(security), user = Depends(verify_token)):
+    token = credentials.credentials
+    url = f"{SUPABASE_URL}/rest/v1/profiles?user_id=eq.{user['id']}&select=*"
+    
+    headers = get_headers()
+    headers["Authorization"] = f"Bearer {token}"
+    
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    
+    if response.status_code >= 400:
+        raise HTTPException(status_code=response.status_code, detail=f"Failed to fetch profile: {data}")
+        
+    if not data:
+        return {"message": "Profile not found", "profile": None}
+        
+    return {"message": "Profile fetched successfully", "profile": data[0]}
+
+@app.post("/profile")
+async def update_profile(profile: UserProfile, credentials: HTTPAuthorizationCredentials = Depends(security), user = Depends(verify_token)):
+    token = credentials.credentials
+    url = f"{SUPABASE_URL}/rest/v1/profiles"
+    
+    headers = get_headers()
+    headers["Authorization"] = f"Bearer {token}"
+    headers["Prefer"] = "resolution=merge-duplicates"
+    
+    payload = {
+        "user_id": user['id'],
+        "name": profile.name,
+        "phone": profile.phone,
+        "college": profile.college,
+        "bio": profile.bio
+    }
+    
+    response = requests.post(url, headers=headers, json=payload)
+    
+    if response.status_code >= 400:
+        raise HTTPException(status_code=response.status_code, detail=f"Failed to update profile: {response.text}")
+        
+    return {"message": "Profile updated successfully!"}
 
 @app.get("/")
 async def root():
