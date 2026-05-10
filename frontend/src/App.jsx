@@ -4,6 +4,7 @@ import AuthLayout from './layouts/AuthLayout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import HomePage from './pages/HomePage';
+import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -18,7 +19,14 @@ function App() {
       {/* Main App Routes */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        {/* Protected routes can be added here if needed */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
       </Route>
 
       {/* Redirects */}

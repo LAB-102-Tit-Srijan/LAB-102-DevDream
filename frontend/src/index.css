@@ -1,15 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Outfit', 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #020617;
+  color: #fafafa;
+  background-color: #09090b; /* Deep dark background */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -31,7 +33,7 @@ body {
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-50;
+    @apply bg-[#09090b] text-[#fafafa];
   }
 }
 
