@@ -1,4 +1,4 @@
-import { Clock, Search, ChevronRight, Loader2, PlayCircle } from 'lucide-react';
+import { Clock, Search, Loader2, PlayCircle } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import api from '../services/api';
 
@@ -67,74 +67,69 @@ const TranscriptViewer = ({ videoId, onTimestampClick }) => {
 
   const formatElapsed = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
-  const filteredTranscript = transcriptData.filter(item => 
+  const filteredTranscript = transcriptData.filter(item =>
     item.text.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="flex flex-col h-full overflow-hidden transition-all">
-      {/* Header */}
-      <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/5">
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-primary-400" />
-          <span className="text-sm font-medium text-slate-200">Interactive Transcript</span>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Search Bar */}
+      {transcriptData.length > 0 && (
+        <div className="shrink-0 px-3 py-2 border-b border-white/5">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search in transcript..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-black/40 border border-white/5 rounded-xl py-3 pl-9 pr-4 text-sm text-slate-300 outline-none focus:border-primary-500/50 transition-all shadow-inner"
+            />
+          </div>
         </div>
-        <div className="relative group">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 group-focus-within:text-primary-400 transition-colors" />
-          <input 
-            type="text" 
-            placeholder="Search transcript..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-black/40 border border-white/5 rounded-full py-1.5 pl-8 pr-4 text-xs text-slate-300 outline-none focus:border-primary-500/50 transition-all w-40"
-          />
-        </div>
-      </div>
+      )}
 
-      {/* Transcript List */}
-      <div 
+      {/* Transcript Grid */}
+      <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent relative"
+        className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
       >
         {!videoId ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-3 opacity-50">
             <Clock className="w-8 h-8" />
-            <p className="text-sm">Upload a video to see transcript</p>
+            <p className="text-sm">Upload a video to see timestamps</p>
           </div>
         ) : transcriptData.length > 0 ? (
           filteredTranscript.length > 0 ? (
-            filteredTranscript.map((item, index) => (
-              <button
-                key={index}
-                title="Jump to this moment"
-                onClick={() => {
-                  setActiveIndex(index);
-                  onTimestampClick(item.start);
-                }}
-                className={`w-full text-left p-3 rounded-xl transition-all group flex gap-3 ${
-                  activeIndex === index 
-                    ? 'bg-gradient-to-r from-primary-500/10 to-transparent border border-primary-500/20 shadow-[inset_2px_0_0_0_rgba(249,115,22,1)]' 
-                    : 'hover:bg-white/5 border border-transparent hover:shadow-[inset_2px_0_0_0_rgba(255,255,255,0.1)]'
-                }`}
-              >
-                <div className={`flex flex-col items-center justify-center w-14 shrink-0 ${
-                  activeIndex === index ? 'text-primary-400' : 'text-slate-500 group-hover:text-primary-300'
-                }`}>
-                  <span className="text-[13px] font-mono mt-0.5 group-hover:hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filteredTranscript.map((item, index) => (
+                <button
+                  key={index}
+                  title="Jump to this moment"
+                  onClick={() => {
+                    setActiveIndex(index);
+                    onTimestampClick(item.start);
+                  }}
+                  className={`w-full text-left p-4 rounded-xl border transition-all flex flex-col gap-2 ${
+                    activeIndex === index
+                      ? 'bg-primary-500/10 border-primary-500/30 shadow-[inset_0_2px_10px_rgba(249,115,22,0.1)]'
+                      : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className={`flex items-center gap-2 text-xs font-mono font-medium ${
+                    activeIndex === index ? 'text-primary-400' : 'text-slate-400'
+                  }`}>
+                    <Clock className="w-3.5 h-3.5" />
                     {item.time || item.start}
-                  </span>
-                  <PlayCircle className="w-5 h-5 hidden group-hover:block" />
-                </div>
-                
-                <div className="flex-1 border-l border-white/5 pl-3">
-                  <p className={`text-[15px] leading-relaxed ${
-                    activeIndex === index ? 'text-slate-100 font-medium' : 'text-slate-400 group-hover:text-slate-200'
+                  </div>
+                  <p className={`text-sm line-clamp-3 leading-relaxed ${
+                    activeIndex === index ? 'text-white' : 'text-slate-300'
                   }`}>
                     {item.text}
                   </p>
-                </div>
-              </button>
-            ))
+                </button>
+              ))}
+            </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-2 opacity-50">
               <Search className="w-8 h-8" />
@@ -155,15 +150,15 @@ const TranscriptViewer = ({ videoId, onTimestampClick }) => {
         )}
       </div>
 
-      {/* Footer Info */}
-      <div className="p-3 bg-black/40 border-t border-white/5 flex items-center justify-center gap-2 backdrop-blur-md">
+      {/* Status Footer */}
+      <div className="shrink-0 px-3 py-2 bg-black/40 border-t border-white/5 flex items-center justify-center gap-2">
         <div className={`w-1.5 h-1.5 rounded-full ${
-          status === 'transcribed' ? 'bg-emerald-500' : 
-          status === 'failed' ? 'bg-red-500' : 
+          status === 'transcribed' ? 'bg-emerald-500' :
+          status === 'failed' ? 'bg-red-500' :
           'bg-amber-500 animate-pulse'
         }`} />
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-          {status === 'transcribed' ? 'AI Generated • Click to Navigate' : 'AI Processing...'}
+        <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">
+          {status === 'transcribed' ? 'Click to jump' : 'Processing...'}
         </p>
       </div>
     </div>

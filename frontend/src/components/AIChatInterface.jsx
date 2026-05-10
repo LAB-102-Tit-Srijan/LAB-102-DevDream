@@ -1,4 +1,4 @@
-import { Send, User, Bot, Sparkles, Loader2, FileText, Clock, Zap } from 'lucide-react';
+import { Send, User, Bot, Sparkles, Loader2, FileText, Clock } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 const AIChatInterface = ({ videoData }) => {
@@ -13,11 +13,11 @@ const AIChatInterface = ({ videoData }) => {
         { 
           id: 1, 
           type: 'ai', 
-          content: `Hello! I've successfully analyzed your video "${videoData.name}". I am ready to answer any questions or generate summaries based on its content.`,
+          content: `Hello! I've analyzed your video "${videoData.name}". Ask me anything or use the quick actions below.`,
           suggestions: [
-            "What are the main concepts discussed?", 
-            "Generate a 5-point summary", 
-            "Are there any definitions I should remember?"
+            "What are the main concepts?", 
+            "Generate a summary", 
+            "Key definitions?"
           ]
         }
       ]);
@@ -39,7 +39,7 @@ const AIChatInterface = ({ videoData }) => {
     setIsTyping(true);
 
     try {
-      if (!videoData?.id) throw new Error("Video ID not found. Please ensure video is uploaded.");
+      if (!videoData?.id) throw new Error("Video ID not found.");
 
       const history = messages
         .filter(m => !m.suggestions)
@@ -76,60 +76,50 @@ const AIChatInterface = ({ videoData }) => {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Context Header */}
-      <div className="p-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-primary-400" />
-          <span className="text-sm font-medium text-slate-200">AI Companion</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400 bg-black/40 px-3 py-1 rounded-full border border-white/5">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          Context Active
-        </div>
-      </div>
-
-      {/* Quick Actions (Smart Summaries) */}
-      <div className="p-3 border-b border-white/5 bg-black/20 flex flex-wrap gap-2">
+      {/* Quick Actions */}
+      <div className="shrink-0 p-3 border-b border-white/5 bg-black/20 flex flex-wrap gap-2">
         <button 
           onClick={() => handleSend("Generate a topic-wise summary of this lecture.")}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-primary-500/10 hover:bg-primary-500/20 text-primary-300 border border-primary-500/20 rounded-full transition-all"
+          className="flex items-center gap-1.5 text-sm px-3.5 py-2 bg-primary-500/10 hover:bg-primary-500/20 text-primary-300 border border-primary-500/20 rounded-full transition-all"
         >
           <FileText className="w-3 h-3" />
-          Topic-wise Summary
+          Summary
         </button>
         <button 
           onClick={() => handleSend("Summarize the last 5 minutes of the video.")}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-primary-500/10 hover:bg-primary-500/20 text-primary-300 border border-primary-500/20 rounded-full transition-all"
+          className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 bg-primary-500/10 hover:bg-primary-500/20 text-primary-300 border border-primary-500/20 rounded-full transition-all"
         >
           <Clock className="w-3 h-3" />
-          Last 5-Min Summary
+          Last 5 min
         </button>
       </div>
 
-      {/* Messages Area */}
+      {/* Messages */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+        className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
       >
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex gap-4 ${msg.type === 'user' ? 'flex-row-reverse' : ''}`}>
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-              msg.type === 'user' ? 'bg-gradient-to-br from-primary-400 to-primary-600 shadow-[0_0_10px_rgba(249,115,22,0.4)]' : 'bg-white/5 border border-white/10'
+          <div key={msg.id} className={`flex gap-3 ${msg.type === 'user' ? 'flex-row-reverse' : ''}`}>
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+              msg.type === 'user' 
+                ? 'bg-gradient-to-br from-primary-400 to-primary-600 shadow-[0_0_8px_rgba(249,115,22,0.3)]' 
+                : 'bg-white/5 border border-white/10'
             }`}>
-              {msg.type === 'user' ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-primary-400" />}
+              {msg.type === 'user' ? <User className="w-3.5 h-3.5 text-white" /> : <Bot className="w-3.5 h-3.5 text-primary-400" />}
             </div>
             
-            <div className={`space-y-3 max-w-[85%] flex flex-col ${msg.type === 'user' ? 'items-end' : ''}`}>
-              <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
+            <div className={`space-y-2 max-w-[85%] flex flex-col ${msg.type === 'user' ? 'items-end' : ''}`}>
+              <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                 msg.type === 'user' 
-                  ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-tr-none shadow-[0_0_15px_rgba(249,115,22,0.2)]' 
-                  : 'bg-white/5 text-slate-200 border border-white/5 rounded-tl-none backdrop-blur-md'
+                  ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-tr-sm shadow-[0_0_12px_rgba(249,115,22,0.15)]' 
+                  : 'bg-white/5 text-slate-200 border border-white/5 rounded-tl-sm'
               }`}>
                 {msg.content}
               </div>
 
               {msg.suggestions && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap gap-1.5 mt-1">
                   {msg.suggestions.map((s) => (
                     <button 
                       key={s}
@@ -146,42 +136,39 @@ const AIChatInterface = ({ videoData }) => {
         ))}
 
         {isTyping && (
-          <div className="flex gap-4 animate-pulse">
-            <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary-400" />
+          <div className="flex gap-3 animate-pulse">
+            <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 text-primary-400" />
             </div>
-            <div className="bg-white/5 border border-white/5 p-4 rounded-2xl rounded-tl-none">
+            <div className="bg-white/5 border border-white/5 px-4 py-3 rounded-2xl rounded-tl-sm">
               <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
             </div>
           </div>
         )}
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 bg-black/40 border-t border-white/5 backdrop-blur-md">
+      {/* Input */}
+      <div className="shrink-0 p-3 bg-black/40 border-t border-white/5">
         <form 
           onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
-          className="relative flex items-center group"
+          className="relative flex items-center"
         >
           <input 
             type="text" 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isTyping}
-            placeholder={isTyping ? "Waiting for response..." : "Ask anything about the video..."}
-            className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white focus:border-primary-500/50 focus:bg-black/60 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-slate-500"
+            placeholder={isTyping ? "Thinking..." : "Ask about the video..."}
+            className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 pl-3.5 pr-10 text-sm text-white focus:border-primary-500/50 outline-none transition-all disabled:opacity-50 placeholder:text-slate-500"
           />
           <button 
             type="submit"
             disabled={!input.trim() || isTyping}
-            className="absolute right-2 p-1.5 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 disabled:opacity-50 disabled:from-white/10 disabled:to-white/10 text-white rounded-lg transition-all shadow-[0_0_10px_rgba(249,115,22,0.3)] disabled:shadow-none"
+            className="absolute right-1.5 p-1.5 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 disabled:opacity-30 disabled:from-white/10 disabled:to-white/10 text-white rounded-lg transition-all"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-3.5 h-3.5" />
           </button>
         </form>
-        <p className="text-[10px] text-center text-slate-500 mt-3">
-          Session context is retained. Answers are grounded in the lecture.
-        </p>
       </div>
     </div>
   );

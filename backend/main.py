@@ -23,6 +23,8 @@ from models import UserSignup, UserLogin, UserProfile
 from app.api.video import router as video_router
 from app.api.transcript import router as transcript_router
 from app.api.chat import router as chat_router
+from app.api.interaction import router as interaction_router
+from app.api.google_docs import router as google_docs_router
 
 # Load environment variables from the current directory's .env file
 env_path = Path('.') / '.env'
@@ -53,6 +55,8 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(video_router)
 app.include_router(transcript_router)
 app.include_router(chat_router)
+app.include_router(interaction_router)
+app.include_router(google_docs_router)
 
 # ── Auth Setup ──────────────────────────────────────────────────────────────
 security = HTTPBearer()

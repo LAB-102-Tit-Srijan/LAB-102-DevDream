@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Play, Sparkles, MessageSquare, FileText, Clock, Users, Zap, TrendingUp } from 'lucide-react';
+import { Play, Sparkles, MessageSquare, FileText, Clock, Users, Zap, TrendingUp, BrainCircuit, Github, Linkedin, Twitter, Mail, Heart, ArrowUpRight } from 'lucide-react';
 
 const HomePage = () => {
   return (
@@ -147,6 +147,121 @@ const HomePage = () => {
             </div>
         </div>
       </section>
+
+      {/* ═══ FOOTER ═══ */}
+      <footer className="relative z-10 border-t border-white/5 bg-black/60 backdrop-blur-md">
+        {/* CTA Banner */}
+        <div className="max-w-6xl mx-auto px-6 py-16">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-500/20 via-primary-600/10 to-transparent border border-primary-500/20 p-10 md:p-14 text-center">
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary-500/10 blur-[80px] rounded-full pointer-events-none" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-primary-600/10 blur-[80px] rounded-full pointer-events-none" />
+            <div className="relative z-10">
+              <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
+                Ready to Learn Smarter?
+              </h3>
+              <p className="text-slate-400 text-lg mb-8 max-w-xl mx-auto">
+                Join thousands of students using AI to master lectures faster than ever.
+              </p>
+              <Link
+                to="/signup"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white text-lg font-semibold hover:from-primary-400 hover:to-primary-500 shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] transition-all duration-300"
+              >
+                Get Started Free
+                <ArrowUpRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Footer Grid */}
+        <div className="max-w-6xl mx-auto px-6 pb-12">
+          <div className="grid grid-cols-2 md:grid-cols-12 gap-10 md:gap-8">
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-4">
+              <div className="flex items-center gap-2.5 mb-5">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+                  <BrainCircuit className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-white tracking-tight">StudyAI</span>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed mb-6 max-w-xs">
+                An AI-powered learning companion built to transform how students interact with lecture content. Developed for TIT Hackathon 2026.
+              </p>
+              <div className="flex items-center gap-3">
+                {[
+                  { icon: Github, href: 'https://github.com/LAB-102-Tit-Srijan/LAB-102-DevDream' },
+                  { icon: Linkedin, href: '#' },
+                  { icon: Twitter, href: '#' },
+                  { icon: Mail, href: '#' },
+                ].map((social, i) => (
+                  <a
+                    key={i}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 hover:border-primary-500/30 transition-all"
+                  >
+                    <social.icon className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Product Links */}
+            <div className="col-span-1 md:col-span-2">
+              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Product</h4>
+              <ul className="space-y-3">
+                {['AI Chat', 'Transcripts', 'Smart Notes', 'Quiz Engine'].map((item) => (
+                  <li key={item}>
+                    <Link to="/dashboard" className="text-sm text-slate-400 hover:text-primary-400 transition-colors">{item}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Resources */}
+            <div className="col-span-1 md:col-span-2">
+              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Resources</h4>
+              <ul className="space-y-3">
+                {['Documentation', 'API Reference', 'Blog', 'Changelog'].map((item) => (
+                  <li key={item}>
+                    <span className="text-sm text-slate-400 hover:text-primary-400 transition-colors cursor-pointer">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Team */}
+            <div className="col-span-2 md:col-span-4">
+              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Team DevDream</h4>
+              <p className="text-sm text-slate-400 leading-relaxed mb-4">
+                Built with passion by LAB-102 for TIT Hackathon 2026. We believe AI should make education accessible, interactive, and fun.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {['FastAPI', 'React', 'Groq', 'Gemini', 'FAISS', 'Supabase'].map((tech) => (
+                  <span key={tech} className="text-[11px] px-2.5 py-1 bg-white/5 border border-white/5 text-slate-400 rounded-full font-medium">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-white/5">
+          <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-slate-500 flex items-center gap-1.5">
+              © 2026 StudyAI. Made with <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" /> by Team DevDream
+            </p>
+            <div className="flex items-center gap-6">
+              {['Privacy Policy', 'Terms of Service', 'Contact'].map((item) => (
+                <span key={item} className="text-sm text-slate-500 hover:text-slate-300 cursor-pointer transition-colors">{item}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
